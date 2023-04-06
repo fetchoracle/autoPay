@@ -126,6 +126,19 @@ This repository is maintained by the [Fetch team](https://github.com/orgs/fetch-
 
 Check out our issues log here on Github or feel free to reach out anytime [info@fetch.io](mailto:info@fetch.io)
 
+## Deploy
+
+For deploying autopay run the script below:
+
+```
+npx hardhat run scripts/deploy.js --network pulsev3_testnet
+
+```
+
+The current version of the autopay contract is deployed in PulseChain testnet V3 in this address:
+
+[0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352](https://scan.v3.testnet.pulsechain.com/address/0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352)
+
 ## Copyright
 
 Fetch Inc. 2022

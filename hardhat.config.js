@@ -80,6 +80,12 @@ require("dotenv").config();
     //   gas: 2000000 ,
     //   gasPrice: 250000000000
     // }
+    ,  pulsev3_testnet: {
+      chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET_V3),
+      url: `${process.env.NODE_URL_PULSECHAIN_TESTNET_V3}`,
+      seeds: [process.env.PRIVATE_KEY],
+      gasPrice: 5e10
+    },
   },
   etherscan: {
     // Your API key for Etherscan
