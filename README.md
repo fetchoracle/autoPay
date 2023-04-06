@@ -1,4 +1,4 @@
-[![Tests](https://github.com/fetch-io/autopay/actions/workflows/tests.yml/badge.svg)](https://github.com/fetch-io/autopay/actions/workflows/tests.ymli)
+[![Tests](https://github.com/fetchoracle/autopay/actions/workflows/tests.yml/badge.svg)](https://github.com/fetchoracle/autopay/actions/workflows/tests.ymli)
 
 ## Overview <a name="overview"> </a>  
 
@@ -119,7 +119,7 @@ npx hardhat test
 ```
 
 ## Maintainers <a name="maintainers"> </a>
-This repository is maintained by the [Fetch team](https://github.com/orgs/fetch-io/people)
+This repository is maintained by the [Fetch team](https://github.com/orgs/fetchoracle/people)
 
 
 ## How to Contribute<a name="how2contribute"> </a>  

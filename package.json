@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fetch-io/autoPay.git"
+    "url": "git+https://github.com/fetchoracle/autoPay.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/fetch-io/autoPay/issues"
+    "url": "https://github.com/fetchoracle/autoPay/issues"
   },
-  "homepage": "https://github.com/fetch-io/autoPay#readme",
+  "homepage": "https://github.com/fetchoracle/autoPay#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
