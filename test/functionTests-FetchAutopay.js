@@ -6,15 +6,15 @@ const { keccak256 } = require("@ethersproject/keccak256");
 require("chai").use(require("chai-as-promised")).should();
 
 describe("Autopay - function tests", () => {
-  let tellor,autopay,accounts,firstBlocky,blocky,dataFeedBefore,bytesId,queryDataStorage;
+  let fetch,autopay,accounts,firstBlocky,blocky,dataFeedBefore,bytesId,queryDataStorage;
   let array = [];
   let badArray = [];
   let abiCoder = new ethers.utils.AbiCoder();
   const QUERYID2 = h.uintTob32(2);
   const FEE = 10
-  const TRB_QUERY_DATA_ARGS = abiCoder.encode(["string", "string"], ["trb", "usd"])
-  const TRB_QUERY_DATA = abiCoder.encode(["string", "bytes"], ["SpotPrice", TRB_QUERY_DATA_ARGS])
-  const TRB_QUERY_ID = keccak256(TRB_QUERY_DATA)
+  const FETCH_QUERY_DATA_ARGS = abiCoder.encode(["string", "string"], ["fetch", "usd"])
+  const FETCH_QUERY_DATA = abiCoder.encode(["string", "bytes"], ["SpotPrice", FETCH_QUERY_DATA_ARGS])
+  const FETCH_QUERY_ID = keccak256(FETCH_QUERY_DATA)
   const ETH_QUERY_DATA_ARGS = abiCoder.encode(["string", "string"], ["eth", "usd"])
   const ETH_QUERY_DATA = abiCoder.encode(["string", "bytes"], ["SpotPrice", ETH_QUERY_DATA_ARGS])
   const ETH_QUERY_ID = keccak256(ETH_QUERY_DATA)
@@ -30,43 +30,43 @@ describe("Autopay - function tests", () => {
 
   beforeEach(async () => {
     accounts = await ethers.getSigners();
-    const TellorPlayground = await ethers.getContractFactory("TellorPlayground");
-    tellor = await TellorPlayground.deploy();
-    await tellor.deployed();
-    for(i=0; i<2; i++){await tellor.faucet(accounts[0].address);}
+    const FetchPlayground = await ethers.getContractFactory("FetchPlayground");
+    fetch = await FetchPlayground.deploy();
+    await fetch.deployed();
+    for(i=0; i<2; i++){await fetch.faucet(accounts[0].address);}
     const QueryDataStorage = await ethers.getContractFactory("QueryDataStorage");
     queryDataStorage = await QueryDataStorage.deploy();
     await queryDataStorage.deployed();
     const Autopay = await ethers.getContractFactory("AutopayMock");
-    autopay = await Autopay.deploy(tellor.address, queryDataStorage.address, FEE);
+    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address, FEE);
     await autopay.deployed();
     firstBlocky = await h.getBlock();
     await autopay.setupDataFeed(ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600,600,0,0,ETH_QUERY_DATA,0);
     bytesId = keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],[ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600,600,0,0]));
-    await tellor.approve(autopay.address, h.toWei("1000"));
+    await fetch.approve(autopay.address, h.toWei("1000"));
     await autopay.fundFeed(bytesId, ETH_QUERY_ID, h.toWei("1000"));
     payerBefore = await autopay.getDataFeed(bytesId);
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3500), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3500), 0, ETH_QUERY_DATA);
     blocky = await h.getBlock();
     array[0] = blocky.timestamp;
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3525), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3525), 0, ETH_QUERY_DATA);
     blocky = await h.getBlock();
     badArray[0] = blocky.timestamp;
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     h.advanceTime(3600);
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky = await h.getBlock();
     array[1] = blocky.timestamp;
     badArray[1] = blocky.timestamp;
     h.advanceTime(3600);
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3575), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3575), 0, ETH_QUERY_DATA);
     blocky = await h.getBlock();
     array[2] = blocky.timestamp;
   });
 
   it("constructor", async () => {
-    expect(await autopay.tellor()).to.equal(tellor.address);
-    expect(await autopay.token()).to.equal(tellor.address);
+    expect(await autopay.fetch()).to.equal(fetch.address);
+    expect(await autopay.token()).to.equal(fetch.address);
     expect(await autopay.queryDataStorage()).to.equal(queryDataStorage.address);
     expect(await autopay.fee()).to.equal(10)
   });
@@ -89,24 +89,24 @@ describe("Autopay - function tests", () => {
     result = await h.expectThrowMessage(autopay.connect(accounts[1]).claimTip(bytesId, ETH_QUERY_ID, [array[0]]));
     assert.include(result.message, "reward already claimed");
     // **ERROR MSG: no value exists at timestamp
-    await tellor.beginDispute(ETH_QUERY_ID, array[1])
+    await fetch.beginDispute(ETH_QUERY_ID, array[1])
     result = await h.expectThrowMessage(autopay.connect(accounts[1]).claimTip(bytesId, ETH_QUERY_ID, [array[1]]));
     assert.include(result.message, "no value exists at timestamp");
     // **ERROR MSG: price threshold not met
     await autopay.setupDataFeed(ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600000,2,10000,0,ETH_QUERY_DATA,0);
     feedIdPriceThreshold = keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],[ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600000,2,10000,0]));
-    await tellor.approve(autopay.address, h.toWei("1000"));
+    await fetch.approve(autopay.address, h.toWei("1000"));
     await autopay.fundFeed(feedIdPriceThreshold, ETH_QUERY_ID, h.toWei("1"));
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3500), 0, ETH_QUERY_DATA);
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3501), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3500), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3501), 0, ETH_QUERY_DATA);
     blockyPT = await h.getBlock();
     await h.advanceTime(43200);
     result = await h.expectThrowMessage(autopay.connect(accounts[1]).claimTip(feedIdPriceThreshold, ETH_QUERY_ID, [blockyPT.timestamp]));
     assert.include(result.message, "price threshold not met");
      // **ERROR MSG: insufficient balance for all submitted timestamps
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(35000), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(35000), 0, ETH_QUERY_DATA);
     blockyPT1 = await h.getBlock();
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(350000), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(350000), 0, ETH_QUERY_DATA);
     blockyPT2 = await h.getBlock();
     await h.advanceTime(43200);
     result = await h.expectThrowMessage(autopay.connect(accounts[1]).claimTip(feedIdPriceThreshold, ETH_QUERY_ID, [blockyPT1.timestamp, blockyPT2.timestamp])); 
@@ -125,12 +125,12 @@ describe("Autopay - function tests", () => {
     expect(payerBefore.balance).to.not.equal(payerAfter.balance);
     expect(payerAfter.balance).to.equal(h.toWei("997"));
     // Updating Balance Checks
-    // 1% of each tip being shaved for Tellor ~= .01 token/tip claimed
-    // That's why tellor balance is .03 lower than originally expected.
-    expect(await tellor.balanceOf(accounts[1].address)).to.equal(h.toWei("2.97"));
-    // Checking if owner (Tellor) account was updated by fee amount (0.03)
-    expect(await tellor.balanceOf(await tellor.address)).to.equal(h.toWei("0.03"));
-    expect(await tellor.balanceOf(autopay.address)).to.equal(h.toWei("997"));
+    // 1% of each tip being shaved for Fetch ~= .01 token/tip claimed
+    // That's why fetch balance is .03 lower than originally expected.
+    expect(await fetch.balanceOf(accounts[1].address)).to.equal(h.toWei("2.97"));
+    // Checking if owner (Fetch) account was updated by fee amount (0.03)
+    expect(await fetch.balanceOf(await fetch.address)).to.equal(h.toWei("0.03"));
+    expect(await fetch.balanceOf(autopay.address)).to.equal(h.toWei("997"));
   });
   
   it("_getRewardAmount", async () => {
@@ -138,9 +138,9 @@ describe("Autopay - function tests", () => {
     blocky = await h.getBlock();
     await autopay.connect(accounts[10]).setupDataFeed(ETH_QUERY_ID,h.toWei("1"),blocky.timestamp,3600,600,0,0,ETH_QUERY_DATA,0);
     bytesId0 = keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],[ETH_QUERY_ID,h.toWei("1"),blocky.timestamp,3600,600,0,0]));
-    await tellor.approve(autopay.address, h.toWei("100"));
+    await fetch.approve(autopay.address, h.toWei("100"));
     await autopay.fundFeed(bytesId0, ETH_QUERY_ID, h.toWei("100"));
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     let goodBlocky = await h.getBlock();
     h.advanceTime(43201);
     // Variable updates
@@ -162,7 +162,7 @@ describe("Autopay - function tests", () => {
     // require(_amount > 0, "must be sending an amount");
     result = await h.expectThrowMessage(autopay.fundFeed(bytesId, ETH_QUERY_ID, 0));
     assert.include(result.message, "must be sending an amount");
-    // require(IERC20(_feed.tellor).transferFrom(msg.sender,address(this),_amount),"ERC20: transfer amount exceeds balance");
+    // require(IERC20(_feed.fetch).transferFrom(msg.sender,address(this),_amount),"ERC20: transfer amount exceeds balance");
     result = await h.expectThrowMessage(autopay.fundFeed(bytesId, ETH_QUERY_ID, h.toWei("1000300")));
     assert.include(result.message, "Arithmetic operation underflowed or overflowed outside of an unchecked block") // real message returned
     //VARIABLE UPDATES
@@ -171,10 +171,10 @@ describe("Autopay - function tests", () => {
     expect(dataFeedDetails.balance).to.equal(h.toWei("1000"));
     //EVENT DETAILS
     // emit DataFeedFunded(_feedId,_queryId,_amount,_feedFunder);
-    await tellor.approve(autopay.address, h.toWei("100"));
-    let initBal = await tellor.balanceOf(autopay.address)
+    await fetch.approve(autopay.address, h.toWei("100"));
+    let initBal = await fetch.balanceOf(autopay.address)
     await expect(autopay.fundFeed(bytesId, ETH_QUERY_ID, h.toWei("10"))).to.emit(autopay, "DataFeedFunded").withArgs(bytesId, ETH_QUERY_ID, h.toWei("10"), accounts[0].address, [web3.utils.toWei("1"), h.toWei("1010"), firstBlocky.timestamp, 3600, 600, 0, 0, 1]);
-    expect(await tellor.balanceOf(autopay.address) - initBal == h.toWei("10"), "balance should change")
+    expect(await fetch.balanceOf(autopay.address) - initBal == h.toWei("10"), "balance should change")
   });
   
   it("setupDataFeed", async () => {
@@ -209,7 +209,7 @@ describe("Autopay - function tests", () => {
     expect(result.priceThreshold).to.equal(1);
     expect(result.rewardIncreasePerSecond).to.equal(3);
     expect(result.feedsWithFundingIndex).to.equal(0);
-    await tellor.approve(autopay.address, h.toWei("100"));
+    await fetch.approve(autopay.address, h.toWei("100"));
     await autopay.setupDataFeed(ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,7600,600,2,4,ETH_QUERY_DATA,h.toWei("10"));
 
     queryDataArgs = abiCoder.encode(["string", "string"], ["btc", "usd"]);
@@ -235,14 +235,14 @@ describe("Autopay - function tests", () => {
     expect(result).to.be.true;
   });
   it("tip", async () => {
-    await tellor.faucet(accounts[0].address)
+    await fetch.faucet(accounts[0].address)
     await h.expectThrow(autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA));
-    await tellor.approve(autopay.address,web3.utils.toWei("1000"))
+    await fetch.approve(autopay.address,web3.utils.toWei("1000"))
     await h.expectThrow(autopay.tip(h.uintTob32(200),web3.utils.toWei("100"),'0x')) //must be hash
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     let res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == web3.utils.toWei("100"), "tip 1nshould be correct")
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("200"),ETH_QUERY_DATA)
     res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == web3.utils.toWei("200"), "tip 2 should be correct")
@@ -259,7 +259,7 @@ describe("Autopay - function tests", () => {
     await autopay.tip(queryId,web3.utils.toWei("10"),queryData)
     storedQueryData = await queryDataStorage.getQueryData(queryId);
     assert(storedQueryData == queryData, "query data not stored correctly");
-    await tellor.connect(accounts[2]).submitValue(queryId, h.uintTob32(3550), 0, queryData);
+    await fetch.connect(accounts[2]).submitValue(queryId, h.uintTob32(3550), 0, queryData);
     await autopay.tip(queryId,web3.utils.toWei("10"),queryData)
     storedQueryData = await queryDataStorage.getQueryData(queryId);
     assert(storedQueryData == queryData, "query data not stored correctly");
@@ -270,9 +270,9 @@ describe("Autopay - function tests", () => {
     result = await h.expectThrowMessage(autopay.claimOneTimeTip(ETH_QUERY_ID,[12345]));
     assert.include(result.message, "no tips submitted for this queryId")
     // **ERROR MSG: buffer time has not passed
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("1"),ETH_QUERY_DATA)
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky0 = await h.getBlock()
     result = await h.expectThrowMessage(autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID,[blocky0.timestamp]));
     assert.include(result.message, "buffer time has not passed")
@@ -280,16 +280,16 @@ describe("Autopay - function tests", () => {
     await autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID,[blocky0.timestamp])
     // **ERROR MSG: value disputed
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("1"),ETH_QUERY_DATA)
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky1 = await h.getBlock()
     await h.advanceTime(86400/2)
-    await tellor.beginDispute(ETH_QUERY_ID, blocky1.timestamp)
+    await fetch.beginDispute(ETH_QUERY_ID, blocky1.timestamp)
     // await autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID,[blocky1.timestamp])
     result = await h.expectThrowMessage(autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID, [blocky1.timestamp]))
     assert.include(result.message, "value disputed")
     // **ERROR MSG: msg sender must be reporter address
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("1"),ETH_QUERY_DATA)
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky2 = await h.getBlock()
     await h.advanceTime(86400/2)
     result = await h.expectThrowMessage(autopay.connect(accounts[3]).claimOneTimeTip(ETH_QUERY_ID, [blocky2.timestamp]))
@@ -297,19 +297,19 @@ describe("Autopay - function tests", () => {
     await autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID, [blocky2.timestamp])
     // **ERROR MSG: tip earned by previous submission
     await autopay.tip(ETH_QUERY_ID, h.toWei("1"), ETH_QUERY_DATA)
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky3 = await h.getBlock()
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky4 = await h.getBlock()
     await h.advanceTime(86400/2)
     result = await h.expectThrowMessage(autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID, [blocky4.timestamp]))
     assert.include(result.message, "tip earned by previous submission")
     await autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID, [blocky3.timestamp])
     // **ERROR MSG: timestamp not eligible for tip
-    await tellor.connect(accounts[4]).submitValue(h.hash(h.bytes("hello")), h.uintTob32(3550), 0, h.bytes("hello"))
+    await fetch.connect(accounts[4]).submitValue(h.hash(h.bytes("hello")), h.uintTob32(3550), 0, h.bytes("hello"))
     blocky5 = await h.getBlock()
     await autopay.tip(h.hash(h.bytes("hello")), h.toWei("1"), h.bytes("hello"))
-    await tellor.connect(accounts[4]).submitValue(h.hash(h.bytes("hello")), h.uintTob32(3550), 0, h.bytes("hello"))
+    await fetch.connect(accounts[4]).submitValue(h.hash(h.bytes("hello")), h.uintTob32(3550), 0, h.bytes("hello"))
     blocky6 = await h.getBlock()
     await h.advanceTime(86400/2)
     result = await h.expectThrowMessage(autopay.connect(accounts[4]).claimOneTimeTip(h.hash(h.bytes("hello")), [blocky5.timestamp]))
@@ -321,20 +321,20 @@ describe("Autopay - function tests", () => {
   });
   
   it("claimOneTimeTip", async () => {
-    let startBal = await tellor.balanceOf(accounts[2].address);
-    await tellor.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    let startBal = await fetch.balanceOf(accounts[2].address);
+    await fetch.connect(accounts[4]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky1 = await h.getBlock();
     await h.expectThrow(autopay.claimOneTimeTip(ETH_QUERY_ID,[blocky1.timestamp]));
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     await h.expectThrow(autopay.connect(accounts[4]).claimOneTimeTip(ETH_QUERY_ID,[blocky1.timestamp]));//timestamp not eligible
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky = await h.getBlock();
     await h.advanceTime(3600 * 12)
     await autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID,[blocky.timestamp])
     let res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == 0, "tip should be correct")
-    let finBal = await tellor.balanceOf(accounts[2].address);
+    let finBal = await fetch.balanceOf(accounts[2].address);
     assert(finBal - startBal == web3.utils.toWei("99"), "balance should change correctly")
   });
 
@@ -352,20 +352,20 @@ describe("Autopay - function tests", () => {
     let res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == 0, "tip amount should be zero")
     await h.expectThrow(autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA));
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == web3.utils.toWei("100"), "tip should be correct")
   });
   it("getPastTips", async () => {
-    await tellor.faucet(accounts[0].address)
+    await fetch.faucet(accounts[0].address)
     let res = await autopay.getPastTips(ETH_QUERY_ID)
     assert(res.length == 0, "should be no tips",)
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     let blocky1 = await h.getBlock();
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
-    await tellor.approve(autopay.address,web3.utils.toWei("200"))
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.approve(autopay.address,web3.utils.toWei("200"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("200"),ETH_QUERY_DATA)
     let blocky2 = await h.getBlock();
     res = await autopay.getPastTips(ETH_QUERY_ID)
@@ -373,7 +373,7 @@ describe("Autopay - function tests", () => {
     assert(res[0][1] == blocky1.timestamp + 1, "past tip timestamp should be correct")
     assert(res[1][0] == web3.utils.toWei("200"), "past tip amount should be correct")
     assert(res[1][1] == blocky2.timestamp + 1, "past tip timestamp should be correct")
-    await tellor.approve(autopay.address,web3.utils.toWei("300"))
+    await fetch.approve(autopay.address,web3.utils.toWei("300"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("300"),ETH_QUERY_DATA)
     let blocky3 = await h.getBlock();
     res = await autopay.getPastTips(ETH_QUERY_ID)
@@ -384,12 +384,12 @@ describe("Autopay - function tests", () => {
     assert(res.length == 2, "length should be correct")
   });
   it("getPastTipByIndex", async () => {
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     let blocky1 = await h.getBlock();
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
-    await tellor.approve(autopay.address,web3.utils.toWei("200"))
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.approve(autopay.address,web3.utils.toWei("200"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("200"),ETH_QUERY_DATA)
     let blocky2 = await h.getBlock();
     res = await autopay.getPastTipByIndex(ETH_QUERY_ID,0)
@@ -398,7 +398,7 @@ describe("Autopay - function tests", () => {
     res = await autopay.getPastTipByIndex(ETH_QUERY_ID,1)
     assert(res[0] == web3.utils.toWei("200"), "past tip amount should be correct")
     assert(res[1] == blocky2.timestamp + 1, "past tip amount should be correct")
-    await tellor.approve(autopay.address,web3.utils.toWei("300"))
+    await fetch.approve(autopay.address,web3.utils.toWei("300"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("300"),ETH_QUERY_DATA)
     let blocky3 = await h.getBlock();
     res = await autopay.getPastTipByIndex(ETH_QUERY_ID,0)
@@ -411,15 +411,15 @@ describe("Autopay - function tests", () => {
   it("getPastTipCount", async () => {
     let res = await autopay.getPastTipCount(ETH_QUERY_ID)
     assert(res == 0, "past tip count should be correct")
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
-    await tellor.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.connect(accounts[2]).submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     res = await autopay.getPastTipCount(ETH_QUERY_ID)
     assert(res == 2, "past tip count2  should be correct")
-    await tellor.approve(autopay.address,web3.utils.toWei("100"))
+    await fetch.approve(autopay.address,web3.utils.toWei("100"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
     res = await autopay.getPastTipCount(ETH_QUERY_ID)
     assert(res == 2, "past tip count 3 should be correct")
@@ -442,7 +442,7 @@ describe("Autopay - function tests", () => {
     ));
     await autopay.setupDataFeed(DOGE_QUERY_ID,h.toWei("1"),blocky.timestamp,600,400,0,0,DOGE_QUERY_DATA,0);
     await autopay.setupDataFeed(LTC_QUERY_ID,h.toWei("1"),blocky.timestamp,600,400,0,0,LTC_QUERY_DATA,0);
-    await tellor.approve(autopay.address, h.toWei("2"));
+    await fetch.approve(autopay.address, h.toWei("2"));
     await autopay.fundFeed(feedId3,DOGE_QUERY_ID,h.toWei("1"))
     await autopay.fundFeed(feedId4,LTC_QUERY_ID,h.toWei("1"))
     feedIds = await autopay.getFundedFeeds()
@@ -451,7 +451,7 @@ describe("Autopay - function tests", () => {
     assert(feedIds[2] == feedId4, "incorrect third funded feed")
 
     // Check remove funded feed
-    await tellor.connect(accounts[2]).submitValue(DOGE_QUERY_ID, h.uintTob32(1234), 0, DOGE_QUERY_DATA);
+    await fetch.connect(accounts[2]).submitValue(DOGE_QUERY_ID, h.uintTob32(1234), 0, DOGE_QUERY_DATA);
     _block = await h.getBlock();
     await h.advanceTime(43200);
     // Check feed details
@@ -490,8 +490,8 @@ describe("Autopay - function tests", () => {
     expect(response).to.equal(DOGE_QUERY_ID)
   });
   it("getFundedQueryIds", async () => {
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("1000"))
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("1000"))
     fundedIds = await autopay.getFundedQueryIds()
     assert(fundedIds.length == 0)
     // Tip queryId 1
@@ -540,13 +540,13 @@ describe("Autopay - function tests", () => {
     assert(await autopay.queryIdsWithFundingIndex(DOGE_QUERY_ID) == 3)
     assert(await autopay.queryIdsWithFundingIndex(LTC_QUERY_ID) == 4)
 
-    await tellor.submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
+    await fetch.submitValue(ETH_QUERY_ID, h.uintTob32(3550), 0, ETH_QUERY_DATA);
     blocky1 = await h.getBlock();
-    await tellor.submitValue(BTC_QUERY_ID, h.uintTob32(3550), 0, BTC_QUERY_DATA);
+    await fetch.submitValue(BTC_QUERY_ID, h.uintTob32(3550), 0, BTC_QUERY_DATA);
     blocky2 = await h.getBlock();
-    await tellor.submitValue(DOGE_QUERY_ID, h.uintTob32(3550), 0, DOGE_QUERY_DATA);
+    await fetch.submitValue(DOGE_QUERY_ID, h.uintTob32(3550), 0, DOGE_QUERY_DATA);
     blocky3 = await h.getBlock();
-    await tellor.submitValue(LTC_QUERY_ID, h.uintTob32(3550), 0, LTC_QUERY_DATA);
+    await fetch.submitValue(LTC_QUERY_ID, h.uintTob32(3550), 0, LTC_QUERY_DATA);
     blocky4 = await h.getBlock();
 
     await h.advanceTime(3600 * 12)
@@ -595,7 +595,7 @@ describe("Autopay - function tests", () => {
     assert(await autopay.queryIdsWithFundingIndex(DOGE_QUERY_ID) == 0)
     assert(await autopay.queryIdsWithFundingIndex(LTC_QUERY_ID) == 0)
 
-    await tellor.submitValue(BTC_QUERY_ID, h.uintTob32(3550), 0, BTC_QUERY_DATA);
+    await fetch.submitValue(BTC_QUERY_ID, h.uintTob32(3550), 0, BTC_QUERY_DATA);
     blocky2 = await h.getBlock();
 
     await h.advanceTime(3600 * 12)
@@ -620,8 +620,8 @@ describe("Autopay - function tests", () => {
   });
   it("getTipsByAddress", async () => {
     let userAccount = accounts[5]
-    await tellor.faucet(userAccount.address)
-    await tellor.connect(userAccount).approve(autopay.address,h.toWei("1000"))
+    await fetch.faucet(userAccount.address)
+    await fetch.connect(userAccount).approve(autopay.address,h.toWei("1000"))
     await autopay.connect(userAccount).tip(BTC_QUERY_ID,web3.utils.toWei("10"),BTC_QUERY_DATA)
     assert(await autopay.getTipsByAddress(userAccount.address) == web3.utils.toWei("10"))
     await autopay.connect(userAccount).setupDataFeed(ETH_QUERY_ID,h.toWei("1"),blocky.timestamp,3600,600,0,0,ETH_QUERY_DATA,0)
@@ -634,8 +634,8 @@ describe("Autopay - function tests", () => {
     blocky0 = await h.getBlock()
     const INTERVAL = 3600
     // setup data feed with time based rewards
-    await tellor.faucet(accounts[2].address)
-    await tellor.connect(accounts[2]).approve(autopay.address, h.toWei("1000"))
+    await fetch.faucet(accounts[2].address)
+    await fetch.connect(accounts[2]).approve(autopay.address, h.toWei("1000"))
     feedId = ethers.utils.keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"], [ETH_QUERY_ID, h.toWei("1"), blocky0.timestamp, INTERVAL, 600, 0, h.toWei("1")]));
     await autopay.setupDataFeed(ETH_QUERY_ID, h.toWei("1"), blocky0.timestamp, 3600, 600, 0, h.toWei("1"), ETH_QUERY_DATA,0);
     await autopay.connect(accounts[2]).fundFeed(feedId, ETH_QUERY_ID, h.toWei("1000"));
@@ -644,21 +644,21 @@ describe("Autopay - function tests", () => {
     await h.advanceTime(10)
 
     // submit value within window
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
     blocky1 = await h.getBlock();
 
     // advance some time to next window
     await h.advanceTime(INTERVAL + 10)
 
     // submit value inside next window
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
     blocky2 = await h.getBlock();
 
     // advance some time to next window
     await h.advanceTime(INTERVAL + 10)
 
     // submit value inside next window
-    await tellor.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
+    await fetch.connect(accounts[1]).submitValue(ETH_QUERY_ID, h.uintTob32(100), 0, ETH_QUERY_DATA);
     blocky3 = await h.getBlock();
 
     // query non-existent rewards
@@ -711,19 +711,19 @@ describe("Autopay - function tests", () => {
     expect(await autopay.bytesToUint(val8)).to.equal(16)
   })
   it("getFundedSingleTipsInfo", async() => {
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("1000"))
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("1000"))
     await autopay.tip(ETH_QUERY_ID,web3.utils.toWei("100"),ETH_QUERY_DATA)
-    await autopay.tip(TRB_QUERY_ID,web3.utils.toWei("100"),TRB_QUERY_DATA)
+    await autopay.tip(FETCH_QUERY_ID,web3.utils.toWei("100"),FETCH_QUERY_DATA)
     let res = await autopay.getFundedSingleTipsInfo();
     assert(res[0].queryData == ETH_QUERY_DATA)
     assert(res[0].tip == web3.utils.toWei("100"), "first queryId tip should be correct")
-    assert(res[1].queryData == TRB_QUERY_DATA, "second queryData should be correct")
+    assert(res[1].queryData == FETCH_QUERY_DATA, "second queryData should be correct")
     assert(res[1].tip == web3.utils.toWei("100"), "second queryId tip should be correct")
   })
   it("getFundedFeedDetails", async() => {
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("1000"))
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("1000"))
     let res = await autopay.getFundedFeedDetails()
     // feed that was funded in before each section
     assert(res[0].details.reward == h.toWei("1"), "reward should correct")
@@ -737,20 +737,20 @@ describe("Autopay - function tests", () => {
   })
   it("getRewardClaimStatusList", async() => {
     // setup feeds with funding
-    await tellor.faucet(accounts[0].address)
-    await tellor.approve(autopay.address,web3.utils.toWei("1000"))
-    await autopay.setupDataFeed(TRB_QUERY_ID,h.toWei("10"),firstBlocky.timestamp,3600,600,0,0,TRB_QUERY_DATA,h.toWei("1000"));
-    bytesId = keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],[TRB_QUERY_ID,h.toWei("10"),firstBlocky.timestamp,3600,600,0,0]));
+    await fetch.faucet(accounts[0].address)
+    await fetch.approve(autopay.address,web3.utils.toWei("1000"))
+    await autopay.setupDataFeed(FETCH_QUERY_ID,h.toWei("10"),firstBlocky.timestamp,3600,600,0,0,FETCH_QUERY_DATA,h.toWei("1000"));
+    bytesId = keccak256(abiCoder.encode(["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],[FETCH_QUERY_ID,h.toWei("10"),firstBlocky.timestamp,3600,600,0,0]));
     // submit to feeds
-    await tellor.submitValue(TRB_QUERY_ID, h.uintTob32(3500), 0, TRB_QUERY_DATA);
+    await fetch.submitValue(FETCH_QUERY_ID, h.uintTob32(3500), 0, FETCH_QUERY_DATA);
     let blocky = await h.getBlock();
     timestamp1 = blocky.timestamp;
     h.advanceTime(3600);
-    await tellor.connect(accounts[0]).submitValue(TRB_QUERY_ID, h.uintTob32(3525), 1, TRB_QUERY_DATA);
+    await fetch.connect(accounts[0]).submitValue(FETCH_QUERY_ID, h.uintTob32(3525), 1, FETCH_QUERY_DATA);
     blocky = await h.getBlock();
     timestamp2 = blocky.timestamp;
     h.advanceTime(3600);
-    await tellor.connect(accounts[0]).submitValue(TRB_QUERY_ID, h.uintTob32(3550), 2, TRB_QUERY_DATA);
+    await fetch.connect(accounts[0]).submitValue(FETCH_QUERY_ID, h.uintTob32(3550), 2, FETCH_QUERY_DATA);
     blocky = await h.getBlock();
     timestamp3 = blocky.timestamp;
     h.advanceTime(3600);
@@ -761,18 +761,18 @@ describe("Autopay - function tests", () => {
     assert(res[2] == false)
     // claimTip and check status
     h.advanceTime(84600);
-    await autopay.claimTip(bytesId, TRB_QUERY_ID, [timestamp1])
-    res = await autopay.getRewardClaimStatusList(bytesId,TRB_QUERY_ID,[timestamp1,timestamp2,timestamp3])
+    await autopay.claimTip(bytesId, FETCH_QUERY_ID, [timestamp1])
+    res = await autopay.getRewardClaimStatusList(bytesId,FETCH_QUERY_ID,[timestamp1,timestamp2,timestamp3])
     assert(res[0] == true)
     assert(res[1] == false)
     assert(res[2] == false)
-    await autopay.claimTip(bytesId, TRB_QUERY_ID, [timestamp3])
-    res = await autopay.getRewardClaimStatusList(bytesId,TRB_QUERY_ID,[timestamp1,timestamp2,timestamp3])
+    await autopay.claimTip(bytesId, FETCH_QUERY_ID, [timestamp3])
+    res = await autopay.getRewardClaimStatusList(bytesId,FETCH_QUERY_ID,[timestamp1,timestamp2,timestamp3])
     assert(res[0] == true)
     assert(res[1] == false)
     assert(res[2] == true)
-    await autopay.claimTip(bytesId, TRB_QUERY_ID, [timestamp2])
-    res = await autopay.getRewardClaimStatusList(bytesId,TRB_QUERY_ID,[timestamp1,timestamp2,timestamp3])
+    await autopay.claimTip(bytesId, FETCH_QUERY_ID, [timestamp2])
+    res = await autopay.getRewardClaimStatusList(bytesId,FETCH_QUERY_ID,[timestamp1,timestamp2,timestamp3])
     assert(res[0] == true)
     assert(res[1] == true)
     assert(res[2] == true)

@@ -1,21 +1,21 @@
 {
   "name": "autopay",
   "version": "1.0.0",
-  "description": "a structure for paying Tellor reporters in nonTRB or custom structure",
+  "description": "a structure for paying Fetch reporters in nonFETCH or custom structure",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tellor-io/autoPay.git"
+    "url": "git+https://github.com/fetch-io/autoPay.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tellor-io/autoPay/issues"
+    "url": "https://github.com/fetch-io/autoPay/issues"
   },
-  "homepage": "https://github.com/tellor-io/autoPay#readme",
+  "homepage": "https://github.com/fetch-io/autoPay#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
@@ -34,6 +34,6 @@
     "dotenv": "^16.0.0",
     "hardhat-contract-sizer": "^2.4.0",
     "solidity-coverage": "^0.7.20",
-    "usingtellor": "^5.0.1"
+    "usingfetch": "../usingfetch"
   }
 }

@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.3;
 
-import {UsingTellor} from "usingtellor/contracts/UsingTellor.sol";
+import {UsingFetch} from "usingfetch/contracts/UsingFetch.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import "./interfaces/IQueryDataStorage.sol";
 
 /**
- @author Tellor Inc.
+ @author Fetch Inc.
  @title Autopay
- @dev This is a contract for automatically paying for Tellor oracle data at
+ @dev This is a contract for automatically paying for Fetch oracle data at
  * specific time intervals, as well as one time tips.
 */
-contract Autopay is UsingTellor {
+contract Autopay is UsingFetch {
     // Storage
-    IERC20 public token; // TRB token address
+    IERC20 public token; // FETCH token address
     IQueryDataStorage public queryDataStorage; // Query data storage contract
     uint256 public fee; // 1000 is 100%, 50 is 5%, etc.
 
@@ -95,16 +95,16 @@ contract Autopay is UsingTellor {
     // Functions
     /**
      * @dev Initializes system parameters
-     * @param _tellor address of Tellor contract
+     * @param _fetch address of Fetch contract
      * @param _queryDataStorage address of query data storage contract
      * @param _fee percentage, 1000 is 100%, 50 is 5%, etc.
      */
     constructor(
-        address payable _tellor,
+        address payable _fetch,
         address _queryDataStorage,
         uint256 _fee
-    ) UsingTellor(_tellor) {
-        token = IERC20(tellor.token());
+    ) UsingFetch(_fetch) {
+        token = IERC20(fetch.token());
         queryDataStorage = IQueryDataStorage(_queryDataStorage);
         fee = _fee;
     }
@@ -135,8 +135,8 @@ contract Autopay is UsingTellor {
                 _cumulativeReward - ((_cumulativeReward * fee) / 1000)
             )
         );
-        token.approve(address(tellor), (_cumulativeReward * fee) / 1000);
-        tellor.addStakingRewards((_cumulativeReward * fee) / 1000);
+        token.approve(address(fetch), (_cumulativeReward * fee) / 1000);
+        fetch.addStakingRewards((_cumulativeReward * fee) / 1000);
         if (getCurrentTip(_queryId) == 0) {
             if (queryIdsWithFundingIndex[_queryId] != 0) {
                 uint256 _idx = queryIdsWithFundingIndex[_queryId] - 1;
@@ -154,7 +154,7 @@ contract Autopay is UsingTellor {
     }
 
     /**
-     * @dev Allows Tellor reporters to claim their tips in batches
+     * @dev Allows Fetch reporters to claim their tips in batches
      * @param _feedId unique feed identifier
      * @param _queryId ID of reported data
      * @param _timestamps batch of timestamps array of reported data eligible for reward
@@ -216,8 +216,8 @@ contract Autopay is UsingTellor {
                 _cumulativeReward - ((_cumulativeReward * fee) / 1000)
             )
         );
-        token.approve(address(tellor), (_cumulativeReward * fee) / 1000);
-        tellor.addStakingRewards((_cumulativeReward * fee) / 1000);
+        token.approve(address(fetch), (_cumulativeReward * fee) / 1000);
+        fetch.addStakingRewards((_cumulativeReward * fee) / 1000);
         emit TipClaimed(_feedId, _queryId, _cumulativeReward, msg.sender);
     }
 
