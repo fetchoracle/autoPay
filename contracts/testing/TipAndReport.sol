@@ -2,17 +2,17 @@
 pragma solidity 0.8.3;
 
 import "../Autopay.sol";
-import "./TellorPlayground.sol";
+import "./FetchPlayground.sol";
 import "hardhat/console.sol";
 
 // Test contract for tipping and reporting in same block
 contract TipAndReport {
     Autopay public autopay;
-    TellorPlayground public tellor;
+    FetchPlayground public fetch;
 
-    constructor(address _tellor, address _autopay) {
+    constructor(address _fetch, address _autopay) {
         autopay = Autopay(_autopay);
-        tellor = TellorPlayground(_tellor);
+        fetch = FetchPlayground(_fetch);
     }
 
     function claimOneTimeTip(bytes32 _queryId, uint256[] calldata _timestamps) public {
@@ -25,11 +25,11 @@ contract TipAndReport {
     }
 
     function _tip(bytes32 _queryId, uint256 _amount, bytes memory _queryData) internal {
-        tellor.approve(address(autopay), _amount);
+        fetch.approve(address(autopay), _amount);
         autopay.tip(_queryId, _amount, _queryData);
     }
 
     function _submitValue(bytes32 _queryId, bytes memory _value, uint256 _nonce, bytes memory _queryData) internal {
-        tellor.submitValue(_queryId, _value, _nonce, _queryData);
+        fetch.submitValue(_queryId, _value, _nonce, _queryData);
     }
 }

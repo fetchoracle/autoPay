@@ -2,7 +2,7 @@
 pragma solidity 0.8.3;
 
 /**
- @author Tellor Inc.
+ @author Fetch Inc.
  @title QueryDataStorage
  @dev This contract is used for storing query data
 */

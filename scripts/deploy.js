@@ -12,10 +12,10 @@ require("dotenv").config();
 //npx hardhat run scripts/deploy.js --network harmony_testnet
 //npx hardhat run scripts/deploy.js --network harmony_mainnet
 
-var tellorAddress = '0x3251838bd813fdf6a97D32781e011cce8D225d59' // playground
+var fetchAddress = '0xA94B7090dE6F4d46A5bdeB89B3aC184Da2506a55' // playground
 var feeAmount = 20
 
-async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
+async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     console.log("deploy autopay")
     await run("compile")
 
@@ -70,6 +70,9 @@ async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("QueryDataStorage contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ qstorage.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + qstorage.deployTransaction.hash);
+    } else if(net == "pulsev3_testnet") {
+        console.log("fetch contract deployed to:","https://scan.v3.testnet.pulsechain.com/address/"+ qstorage.address)
+        console.log("    transaction hash:", "https://scan.v3.testnet.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
@@ -78,7 +81,7 @@ async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
     console.log("Starting deployment for Autopay contract...")
     const Autopay = await ethers.getContractFactory("contracts/Autopay.sol:Autopay", wallet)
     const autopaywithsigner = await Autopay.connect(wallet)
-    const autopay = await autopaywithsigner.deploy(tellorAdd, qstorage.address, feeAmt)
+    const autopay = await autopaywithsigner.deploy(fetchAdd, qstorage.address, feeAmt)
     await autopay.deployed();
     console.log("Autopay contract deployed to: ", autopay.address)
 
@@ -115,6 +118,9 @@ async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("Autopay contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ autopay.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + autopay.deployTransaction.hash);
+    } else if(net == "pulsev3_testnet") {
+        console.log("fetch contract deployed to:","https://scan.v3.testnet.pulsechain.com/address/"+ autopay.address)
+        console.log("    transaction hash:", "https://scan.v3.testnet.pulsechain.com/tx/" + autopay.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
@@ -145,7 +151,7 @@ async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
     await run("verify:verify",
         {
             address: autopay.address,
-            constructorArguments: [tellorAdd, qstorage.address, feeAmt]
+            constructorArguments: [fetchAdd, qstorage.address, feeAmt]
         },
     )
 
@@ -154,14 +160,14 @@ async function deployAutopay(_network, _pk, _nodeURL, tellorAdd, feeAmt) {
 }
 
 
-deployAutopay("harmony_testnet", process.env.TESTNET_PK, process.env.NODE_URL_HARMONY_TESTNET, tellorAddress, feeAmount)
+deployAutopay("pulsev3_testnet", process.env.TESTNET_PK, process.env.NODE_URL_PULSECHAIN_TESTNET_V3, fetchAddress, feeAmount)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
         process.exit(1);
     });
 
-// deployAutopay("harmony_mainnet", process.env.MAINNET_PK, process.env.NODE_URL_HARMONY_MAINNET, tellorAddress, ownerAddress, feeAmount)
+// deployAutopay("harmony_mainnet", process.env.MAINNET_PK, process.env.NODE_URL_HARMONY_MAINNET, fetchAddress, ownerAddress, feeAmount)
 //     .then(() => process.exit(0))
 //     .catch(error => {
 //         console.error(error);

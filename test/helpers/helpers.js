@@ -95,7 +95,7 @@ function toWei(n) {
   return web3.utils.toWei(n);
 }
 
-function toTRB(n) {
+function toFETCH(n) {
   return BigNumber.from(Math.round((((n/1e9)*0.59)/11)*1e18));
 }
 
@@ -115,7 +115,7 @@ module.exports = {
   advanceTime,
   advanceBlock,
   advanceTimeAndBlock,
-  toTRB,
+  toFETCH,
   takeFifteen,
   toWei,
   expectThrow,

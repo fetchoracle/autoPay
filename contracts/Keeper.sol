@@ -2,19 +2,19 @@
 pragma solidity 0.8.3;
 
 /**
- @author Tellor Inc.
+ @author Fetch Inc.
  @title Keeper
- @dev This is contract for automatically paying for Tellor oracle data at
+ @dev This is contract for automatically paying for Fetch oracle data at
  * specific time intervals. Any non-rebasing ERC20 token can be used for payment.
  * Only the first data submission within each time window gets a reward.
 */
 
-import "usingtellor/contracts/UsingTellor.sol";
+import "usingfetch/contracts/UsingFetch.sol";
 import "./interfaces/IERC20.sol";
 
-contract Keeper is UsingTellor {
+contract Keeper is UsingFetch {
     // Storage
-    IERC20 public token; // TRB token address
+    IERC20 public token; // FETCH token address
     address public owner;
     uint256 public fee; // 1000 is 100%, 50 is 5%, etc.
 
@@ -77,16 +77,16 @@ contract Keeper is UsingTellor {
     // Functions
     /**
      * @dev Initializes system parameters
-     * @param _tellor address of Tellor contract
+     * @param _fetch address of Fetch contract
      * @param _token address of token used for tips
      * @param _fee percentage, 1000 is 100%, 50 is 5%, etc.
      */
     constructor(
-        address payable _tellor,
+        address payable _fetch,
         address _token,
         address _owner,
         uint256 _fee
-    ) UsingTellor(_tellor) {
+    ) UsingFetch(_fetch) {
         token = IERC20(_token);
         owner = _owner;
         fee = _fee;
@@ -188,9 +188,10 @@ contract Keeper is UsingTellor {
         emit KeeperJobFunded(msg.sender, _amount, _jobId);
     }
 
-    function increaseMaxGasForExistingJob(bytes32 _queryId, uint256 _amount)
-        external
-    {
+    function increaseMaxGasForExistingJob(
+        bytes32 _queryId,
+        uint256 _amount
+    ) external {
         KeeperTip storage _keep = keeperTips[_queryId];
         require(_keep.maxGasRefund > 0, "Job not setup yet");
         require(msg.sender == _keep.creator, "Not job creator");
@@ -223,7 +224,7 @@ contract Keeper is UsingTellor {
         uint256 _interval,
         uint256 _payReward
     ) external {
-        string memory _type = "TellorKpr";
+        string memory _type = "FetchKpr";
         bytes memory _encodedArgs = abi.encode(
             _functionSig,
             _contractAddress,
@@ -312,10 +313,8 @@ contract Keeper is UsingTellor {
                 _keeperTips.amount - ((_keeperTips.amount * fee) / 1000)
             )
         );
-        token.approve(address(tellor), (_keeperTips.amount * fee) / 1000);
-        tellor.addStakingRewards(
-            (_keeperTips.amount * fee) / 1000
-        );
+        token.approve(address(fetch), (_keeperTips.amount * fee) / 1000);
+        fetch.addStakingRewards((_keeperTips.amount * fee) / 1000);
         _keeperTips.amount = 0;
         emit KeeperTipClaimed(_queryId, _keeperTips.amount, _keeperAddress);
     }
@@ -337,7 +336,7 @@ contract Keeper is UsingTellor {
         uint256 _maxGasRefund,
         uint256 _tip
     ) external {
-        string memory _type = "TellorKpr";
+        string memory _type = "FetchKpr";
         bytes memory _encodedArgs = abi.encode(
             _functionSig,
             _contractAddress,
@@ -382,7 +381,9 @@ contract Keeper is UsingTellor {
     }
 
     // Getters
-    function continuousJobById(bytes32 _jobId)
+    function continuousJobById(
+        bytes32 _jobId
+    )
         external
         view
         returns (
@@ -419,11 +420,9 @@ contract Keeper is UsingTellor {
         return userTipsTotal[_user];
     }
 
-    function singleJobById(bytes32 _queryId)
-        external
-        view
-        returns (KeeperTip memory)
-    {
+    function singleJobById(
+        bytes32 _queryId
+    ) external view returns (KeeperTip memory) {
         return keeperTips[_queryId];
     }
 
@@ -433,13 +432,12 @@ contract Keeper is UsingTellor {
      * @param _jobId JobID to generate queryId for
      * @param _timestamp Unique timestamp used to generate queryId
      */
-    function _generateQueryId(bytes32 _jobId, uint256 _timestamp)
-        internal
-        view
-        returns (bytes32)
-    {
+    function _generateQueryId(
+        bytes32 _jobId,
+        uint256 _timestamp
+    ) internal view returns (bytes32) {
         KeeperJobDetails storage _job = jobs[_jobId];
-        string memory _type = "TellorKpr";
+        string memory _type = "FetchKpr";
         bytes memory _encodedArgs = abi.encode(
             _job.functionSig,
             _job.contractAddress,

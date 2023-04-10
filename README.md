@@ -1,8 +1,8 @@
-[![Tests](https://github.com/tellor-io/autopay/actions/workflows/tests.yml/badge.svg)](https://github.com/tellor-io/autopay/actions/workflows/tests.ymli)
+[![Tests](https://github.com/fetchoracle/autopay/actions/workflows/tests.yml/badge.svg)](https://github.com/fetchoracle/autopay/actions/workflows/tests.ymli)
 
 ## Overview <a name="overview"> </a>  
 
-<b>Autopay</b> is a system for creating and funding data feeds for use with Tellor. 
+<b>Autopay</b> is a system for creating and funding data feeds for use with Fetch. 
 
 ## To Use
 
@@ -73,7 +73,7 @@ To receive fees from a recurring feed:
 ```solidity 
 
     /**
-     * @param _reporter address of Tellor reporter
+     * @param _reporter address of Fetch reporter
      * @param _feedId unique feed identifier
      * @param _queryId ID of reported data
      * @param _timestamps[] batch of timestamps array of reported data eligible for reward
@@ -119,13 +119,26 @@ npx hardhat test
 ```
 
 ## Maintainers <a name="maintainers"> </a>
-This repository is maintained by the [Tellor team](https://github.com/orgs/tellor-io/people)
+This repository is maintained by the [Fetch team](https://github.com/orgs/fetchoracle/people)
 
 
 ## How to Contribute<a name="how2contribute"> </a>  
 
-Check out our issues log here on Github or feel free to reach out anytime [info@tellor.io](mailto:info@tellor.io)
+Check out our issues log here on Github or feel free to reach out anytime [info@fetch.io](mailto:info@fetch.io)
+
+## Deploy
+
+For deploying autopay run the script below:
+
+```
+npx hardhat run scripts/deploy.js --network pulsev3_testnet
+
+```
+
+The current version of the autopay contract is deployed in PulseChain testnet V3 in this address:
+
+[0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352](https://scan.v3.testnet.pulsechain.com/address/0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352)
 
 ## Copyright
 
-Tellor Inc. 2022
+Fetch Inc. 2022
