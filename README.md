@@ -131,9 +131,13 @@ Check out our issues log here on Github or feel free to reach out anytime [info@
 For deploying autopay run the script below:
 
 ```
-npx hardhat run scripts/deploy.js --network pulsev3_testnet
+npx hardhat run scripts/deploy.js --network pulsev4_testnet
 
 ```
+
+The current version of the autopay contract is deployed in PulseChain testnet V4 in this address:
+
+[0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432](https://scan.v4.testnet.pulsechain.com/address/0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432)
 
 The current version of the autopay contract is deployed in PulseChain testnet V3 in this address:
 
