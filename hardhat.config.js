@@ -40,7 +40,7 @@ require("dotenv").config();
     },
     // goerli: {
     //      url: `${process.env.NODE_URL_GOERLI}`,
-    //      seeds: [process.env.TESTNET_PK],
+    //      seeds: [process.env.PRIVATE_KEY],
     //      gas: 10000000 ,
     //      gasPrice: 40000000000
     // }// ,
@@ -52,7 +52,7 @@ require("dotenv").config();
     //    },
     // mumbai: {
     //     url: `${process.env.NODE_URL_MUMBAI}`,
-    //     accounts: [process.env.TESTNET_PK],
+    //     accounts: [process.env.PRIVATE_KEY],
     //     gas: 5000000 ,
     //     gasPrice: 50000000000
     //   }
@@ -64,25 +64,31 @@ require("dotenv").config();
     // }
     harmony_testnet: {
       url: `${process.env.NODE_URL_HARMONY_TESTNET}`,
-      seeds: [process.env.TESTNET_PK],
+      seeds: [process.env.PRIVATE_KEY],
       gas: 2000000 ,
       gasPrice: 250000000000
     }
     // arbitrum_testnet: {
     //   url: `${process.env.NODE_URL_ARBITRUM_TESTNET}`,
-    //   seeds: [process.env.TESTNET_PK],
+    //   seeds: [process.env.PRIVATE_KEY],
     //   gas: 2000000 ,
     //   gasPrice: 250000000000
     // }
     // optimism_testnet: {
     //   url: `${process.env.NODE_URL_OPTIMISM_TESTNET}`,
-    //   seeds: [process.env.TESTNET_PK],
+    //   seeds: [process.env.PRIVATE_KEY],
     //   gas: 2000000 ,
     //   gasPrice: 250000000000
     // }
     ,  pulsev3_testnet: {
       chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET_V3),
       url: `${process.env.NODE_URL_PULSECHAIN_TESTNET_V3}`,
+      seeds: [process.env.PRIVATE_KEY],
+      gasPrice: 5e10
+    }
+    ,  pulsev4_testnet: {
+      chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET_V4),
+      url: `${process.env.NODE_URL_PULSECHAIN_TESTNET_V4}`,
       seeds: [process.env.PRIVATE_KEY],
       gasPrice: 5e10
     },
