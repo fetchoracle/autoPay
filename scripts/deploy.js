@@ -70,9 +70,6 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("QueryDataStorage contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ qstorage.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + qstorage.deployTransaction.hash);
-    } else if(net == "pulsev3_testnet") {
-        console.log("QueryDataStorage contract deployed to:","https://scan.v3.testnet.pulsechain.com/address/"+ qstorage.address)
-        console.log("    transaction hash:", "https://scan.v3.testnet.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
     } else if(net == "pulsev4_testnet") {
         console.log("QueryDataStorage contract deployed to:","https://scan.v4.testnet.pulsechain.com/address/"+ qstorage.address)
         console.log("    transaction hash:", "https://scan.v4.testnet.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
@@ -121,9 +118,6 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("Autopay contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ autopay.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + autopay.deployTransaction.hash);
-    } else if (net == "pulsev3_testnet") {
-        console.log("Autopay contract deployed to:","https://scan.v3.testnet.pulsechain.com/address/"+ autopay.address)
-        console.log("    transaction hash:", "https://scan.v3.testnet.pulsechain.com/tx/" + autopay.deployTransaction.hash);
     } else if (net == "pulsev4_testnet") {
         console.log("Autopay contract deployed to:","https://scan.v4.testnet.pulsechain.com/address/"+ autopay.address)
         console.log("    transaction hash:", "https://scan.v4.testnet.pulsechain.com/tx/" + autopay.deployTransaction.hash);
@@ -164,14 +158,6 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     console.log("Autopay contract verified")
 
 }
-
-
-// deployAutopay("pulsev3_testnet", process.env.PRIVATE_KEY, process.env.NODE_URL_PULSECHAIN_TESTNET_V3, fetchAddress, feeAmount)
-//     .then(() => process.exit(0))
-//     .catch(error => {
-//         console.error(error);
-//         process.exit(1);
-//     });
 
 deployAutopay("pulsev4_testnet", process.env.PRIVATE_KEY, process.env.NODE_URL_PULSECHAIN_TESTNET_V4, fetchAddress, feeAmount)
     .then(() => process.exit(0))

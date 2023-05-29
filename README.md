@@ -124,7 +124,7 @@ This repository is maintained by the [Fetch team](https://github.com/orgs/fetcho
 
 ## How to Contribute<a name="how2contribute"> </a>  
 
-Check out our issues log here on Github or feel free to reach out anytime [info@fetch.io](mailto:info@fetch.io)
+Check out our issues log here on Github or feel free to reach out anytime [info@fetchoracle.com](mailto:info@fetchoracle.com)
 
 ## Deploy
 
@@ -138,11 +138,6 @@ npx hardhat run scripts/deploy.js --network pulsev4_testnet
 The current version of the autopay contract is deployed in PulseChain testnet V4 in this address:
 
 [0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432](https://scan.v4.testnet.pulsechain.com/address/0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432)
-
-The current version of the autopay contract is deployed in PulseChain testnet V3 in this address:
-
-[0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352](https://scan.v3.testnet.pulsechain.com/address/0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352)
-
 ## Copyright
 
-Fetch Inc. 2022
+Fetch Inc. 2023
