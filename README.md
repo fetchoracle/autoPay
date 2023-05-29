@@ -108,6 +108,13 @@ Install Dependencies
 ```
 npm i
 ```
+
+Install local dependencies. This project depends on usingFetch projects. To install it, clone the repository in the same folder level than autoPay project.
+
+```
+git clone git@github.com:fetchoracle/usingfetch.git
+```
+
 Compile Smart Contracts
 ```
 npx hardhat compile
@@ -128,20 +135,30 @@ Check out our issues log here on Github or feel free to reach out anytime [info@
 
 ## Deploy
 
-For deploying autopay run the script below:
+Set the env variable in the .env file. Rename .env.example to .env and set the private key of the deployer, RPC url and chain Id. The example below show the values for Pulsechain testnet v4.
 
 ```
-npx hardhat run scripts/deploy.js --network pulsev4_testnet
+PRIVATE_KEY=
+NODE_URL_PULSECHAIN_TESTNET=https://rpc.v4.testnet.pulsechain.com
+CHAIN_ID_PULSECHAIN_TESTNET=943
+```
 
+Please notice that for deploying AutoPay contract the Fetch Flex oracle address is needed. It need to be configured inside scripts/deploy.js file in this variables:
+
+```
+var fetchAddress = ''
+```
+
+For deploying autopay to Pulsechain testnet v4 run the script below:
+
+```
+npx hardhat run scripts/deploy.js 
 ```
 
 The current version of the autopay contract is deployed in PulseChain testnet V4 in this address:
 
 [0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432](https://scan.v4.testnet.pulsechain.com/address/0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432)
 
-The current version of the autopay contract is deployed in PulseChain testnet V3 in this address:
-
-[0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352](https://scan.v3.testnet.pulsechain.com/address/0x6a76FEb976Afa32A42ec9ccFE40F4DbDECF1C352)
 
 ## Copyright
 
