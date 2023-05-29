@@ -135,7 +135,7 @@ Check out our issues log here on Github or feel free to reach out anytime [info@
 
 ## Deploy
 
-Set the env variable in the .env file. Rename .env.example to .env and set the private key of the deployer, RPC url and chain Id. The example below show the values for Pulsechain testnet v4.
+Set the env variable in the .env file. Rename .env.example to .env and set the private key of the deployer, RPC url and chain Id. The example below show the values for Pulsechain testnet.
 
 ```
 PRIVATE_KEY=
@@ -149,13 +149,13 @@ Please notice that for deploying AutoPay contract the Fetch Flex oracle address 
 var fetchAddress = ''
 ```
 
-For deploying autopay to Pulsechain testnet v4 run the script below:
+For deploying autopay to Pulsechain testnet run the script below:
 
 ```
 npx hardhat run scripts/deploy.js 
 ```
 
-The current version of the autopay contract is deployed in PulseChain testnet V4 in this address:
+The current version of the autopay contract is deployed in PulseChain testnet in this address:
 
 [0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432](https://scan.v4.testnet.pulsechain.com/address/0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432)
 ## Copyright
