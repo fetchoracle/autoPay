@@ -109,7 +109,7 @@ Install Dependencies
 npm i
 ```
 
-Install local dependencies. This project depends on usingFetch projects. To install it, clone the repository in the same folder level than autoPay project.
+Install local dependencies. This project depends on usingFetch project. To install it, clone the repository in the same folder level than autoPay project.
 
 ```
 git clone git@github.com:fetchoracle/usingfetch.git

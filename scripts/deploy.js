@@ -12,7 +12,7 @@ require("dotenv").config();
 //npx hardhat run scripts/deploy.js --network harmony_testnet
 //npx hardhat run scripts/deploy.js --network harmony_mainnet
 
-var fetchAddress = '0xc028273C09eDc2f64C1BA16e25f1a1ADBADd1FCf'
+var fetchAddress = '0x20763435F23a727CD8748CE5d80a0b9F9c886110'
 var feeAmount = 20
 
 async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
