@@ -70,7 +70,7 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("QueryDataStorage contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ qstorage.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + qstorage.deployTransaction.hash);
-    } else if(net == "pulsev4_testnet") {
+    } else if(net == "pulse_testnet") {
         console.log("QueryDataStorage contract deployed to:","https://scan.v4.testnet.pulsechain.com/address/"+ qstorage.address)
         console.log("    transaction hash:", "https://scan.v4.testnet.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
     } else {
@@ -118,7 +118,7 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     } else if (net == "xdai"){ //https://blockscout.com/poa/xdai/address/
       console.log("Autopay contract deployed to:","https://blockscout.com/xdai/mainnet/address/"+ autopay.address)
       console.log("    transaction hash:", "https://blockscout.com/xdai/mainnet/tx/" + autopay.deployTransaction.hash);
-    } else if (net == "pulsev4_testnet") {
+    } else if (net == "pulse_testnet") {
         console.log("Autopay contract deployed to:","https://scan.v4.testnet.pulsechain.com/address/"+ autopay.address)
         console.log("    transaction hash:", "https://scan.v4.testnet.pulsechain.com/tx/" + autopay.deployTransaction.hash);
     } else {
@@ -130,36 +130,18 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     console.log('waiting for QueryDataStorage tx confirmation...');
     await qstorage.deployTransaction.wait(7)
 
-    console.log('submitting Autopay contract for verification...');
-
-    await run("verify:verify",
-        {
-            address: qstorage.address,
-            constructorArguments: []
-        },
-    )
-
-    console.log("Autopay contract verified")
+    console.log("Autopay contract deployed")
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for Autopay tx confirmation...');
     await autopay.deployTransaction.wait(7)
 
-    console.log('submitting Autopay contract for verification...');
-
-    await run("verify:verify",
-        {
-            address: autopay.address,
-            constructorArguments: [fetchAdd, qstorage.address, feeAmt]
-        },
-    )
-
-    console.log("Autopay contract verified")
+    console.log("Autopay contract deployed")
 
 }
 
-deployAutopay("pulsev4_testnet", process.env.PRIVATE_KEY, process.env.NODE_URL_PULSECHAIN_TESTNET_V4, fetchAddress, feeAmount)
+deployAutopay("pulse_testnet", process.env.PRIVATE_KEY, process.env.NODE_URL_PULSECHAIN_TESTNET, fetchAddress, feeAmount)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
