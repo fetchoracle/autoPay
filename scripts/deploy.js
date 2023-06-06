@@ -73,6 +73,9 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     } else if(net == "pulsev4_testnet") {
         console.log("QueryDataStorage contract deployed to:","https://scan.v4.testnet.pulsechain.com/address/"+ qstorage.address)
         console.log("    transaction hash:", "https://scan.v4.testnet.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
+    } else if(net == "pulse_mainnet") {
+        console.log("QueryDataStorage contract deployed to:","https://scan.pulsechain.com/address/"+ qstorage.address)
+        console.log("    transaction hash:", "https://scan.pulsechain.com/tx/" + qstorage.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
@@ -159,7 +162,20 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
 
 }
 
-deployAutopay("pulsev4_testnet", process.env.PRIVATE_KEY, process.env.NODE_URL_PULSECHAIN_TESTNET_V4, fetchAddress, feeAmount)
+const nodeUrls = {
+    pulsev4_testnet: process.env.NODE_URL_PULSECHAIN_TESTNET_V4,
+    pulse_mainnet: process.env.NODE_URL_PULSECHAIN_MAINNET
+}
+
+const network = process.env.NETWORK
+const node_url_pulsechain = nodeUrls[network]
+
+if (!node_url_pulsechain) {
+    console.log("Error: please add NETWORK=pulsev4_testnet|pulse_mainnet in .env")
+    process.exit(1)
+}
+
+deployAutopay(network, process.env.PRIVATE_KEY, node_url_pulsechain, fetchAddress, feeAmount)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
