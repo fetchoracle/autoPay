@@ -80,9 +80,9 @@ require("dotenv").config();
     //   gas: 2000000 ,
     //   gasPrice: 250000000000
     // }
-    ,  pulsev4_testnet: {
-      chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET_V4),
-      url: `${process.env.NODE_URL_PULSECHAIN_TESTNET_V4}`,
+    ,  pulse_testnet: {
+      chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET),
+      url: `${process.env.NODE_URL_PULSECHAIN_TESTNET}`,
       seeds: [process.env.PRIVATE_KEY],
       gasPrice: 5e10
     },
