@@ -135,10 +135,11 @@ Check out our issues log here on Github or feel free to reach out anytime [info@
 
 ## Deploy
 
-Set the env variable in the .env file. Rename .env.example to .env and set the private key of the deployer, RPC url and chain Id. The example below show the values for Pulsechain testnet.
+Set the env variable in the .env file. Rename .env.example to .env and set the private key of the deployer, RPC url, chain Id and the network (pulse_testnet or pulse_mainnet). The example below show the values for Pulsechain testnet.
 
 ```
 PRIVATE_KEY=
+NETWORK=pulse_testnet
 NODE_URL_PULSECHAIN_TESTNET=https://rpc.v4.testnet.pulsechain.com
 CHAIN_ID_PULSECHAIN_TESTNET=943
 ```
