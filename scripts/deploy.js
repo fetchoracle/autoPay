@@ -145,7 +145,7 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
 }
 
 const nodeUrls = {
-    pulsev4_testnet: process.env.NODE_URL_PULSECHAIN_TESTNET_V4,
+    pulse_testnet: process.env.NODE_URL_PULSECHAIN_TESTNET,
     pulse_mainnet: process.env.NODE_URL_PULSECHAIN_MAINNET
 }
 
@@ -153,7 +153,7 @@ const network = process.env.NETWORK
 const node_url_pulsechain = nodeUrls[network]
 
 if (!node_url_pulsechain) {
-    console.log("Error: please add NETWORK=pulsev4_testnet|pulse_mainnet in .env")
+    console.log("Error: please add NETWORK=pulse_testnet|pulse_mainnet in .env")
     process.exit(1)
 }
 
