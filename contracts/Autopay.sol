@@ -15,7 +15,6 @@ contract Autopay is UsingFetch {
     // Storage
     IERC20 public token; // FETCH token address
     IQueryDataStorage public queryDataStorage; // Query data storage contract
-    uint256 public fee; // 1000 is 100%, 50 is 5%, etc.
 
     mapping(bytes32 => bytes32[]) currentFeeds; // mapping queryId to dataFeedIds array
     mapping(bytes32 => mapping(bytes32 => Feed)) dataFeed; // mapping queryId to dataFeedId to details
@@ -97,16 +96,13 @@ contract Autopay is UsingFetch {
      * @dev Initializes system parameters
      * @param _fetch address of Fetch contract
      * @param _queryDataStorage address of query data storage contract
-     * @param _fee percentage, 1000 is 100%, 50 is 5%, etc.
      */
     constructor(
         address payable _fetch,
-        address _queryDataStorage,
-        uint256 _fee
+        address _queryDataStorage
     ) UsingFetch(_fetch) {
         token = IERC20(fetch.token());
         queryDataStorage = IQueryDataStorage(_queryDataStorage);
-        fee = _fee;
     }
 
     /**
@@ -132,11 +128,9 @@ contract Autopay is UsingFetch {
         require(
             token.transfer(
                 msg.sender,
-                _cumulativeReward - ((_cumulativeReward * fee) / 1000)
+                _cumulativeReward
             )
         );
-        token.approve(address(fetch), (_cumulativeReward * fee) / 1000);
-        fetch.addStakingRewards((_cumulativeReward * fee) / 1000);
         if (getCurrentTip(_queryId) == 0) {
             if (queryIdsWithFundingIndex[_queryId] != 0) {
                 uint256 _idx = queryIdsWithFundingIndex[_queryId] - 1;
@@ -213,11 +207,9 @@ contract Autopay is UsingFetch {
         require(
             token.transfer(
                 msg.sender,
-                _cumulativeReward - ((_cumulativeReward * fee) / 1000)
+                _cumulativeReward
             )
         );
-        token.approve(address(fetch), (_cumulativeReward * fee) / 1000);
-        fetch.addStakingRewards((_cumulativeReward * fee) / 1000);
         emit TipClaimed(_feedId, _queryId, _cumulativeReward, msg.sender);
     }
 
@@ -532,7 +524,6 @@ contract Autopay is UsingFetch {
         if (_cumulativeReward > _feed.balance) {
             _cumulativeReward = _feed.balance;
         }
-        _cumulativeReward -= ((_cumulativeReward * fee) / 1000);
     }
 
     /**

@@ -84,13 +84,13 @@ require("dotenv").config();
       chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET),
       url: `${process.env.NODE_URL_PULSECHAIN_TESTNET}`,
       seeds: [process.env.PRIVATE_KEY],
-      gasPrice: 5e10
+      gasPrice: process.env.GAS_PRICE || 5e10
     },
     pulse_mainnet: {
       chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_MAINNET),
       url: `${process.env.NODE_URL_PULSECHAIN_MAINNET}`,
       seeds: [process.env.PRIVATE_KEY],
-      gasPrice: 5e10
+      gasPrice: process.env.GAS_PRICE || 5e10
     }
   },
   etherscan: {
