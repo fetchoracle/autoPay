@@ -11,7 +11,7 @@ describe("Autopay - function tests", () => {
   let badArray = [];
   let abiCoder = new ethers.utils.AbiCoder();
   const QUERYID2 = h.uintTob32(2);
-  const FEE = 10
+  const FEE = 0
   const FETCH_QUERY_DATA_ARGS = abiCoder.encode(["string", "string"], ["fetch", "usd"])
   const FETCH_QUERY_DATA = abiCoder.encode(["string", "bytes"], ["SpotPrice", FETCH_QUERY_DATA_ARGS])
   const FETCH_QUERY_ID = keccak256(FETCH_QUERY_DATA)
@@ -38,7 +38,7 @@ describe("Autopay - function tests", () => {
     queryDataStorage = await QueryDataStorage.deploy();
     await queryDataStorage.deployed();
     const Autopay = await ethers.getContractFactory("AutopayMock");
-    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address, FEE);
+    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address);
     await autopay.deployed();
     firstBlocky = await h.getBlock();
     await autopay.setupDataFeed(ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600,600,0,0,ETH_QUERY_DATA,0);
@@ -68,7 +68,6 @@ describe("Autopay - function tests", () => {
     expect(await autopay.fetch()).to.equal(fetch.address);
     expect(await autopay.token()).to.equal(fetch.address);
     expect(await autopay.queryDataStorage()).to.equal(queryDataStorage.address);
-    expect(await autopay.fee()).to.equal(10)
   });
   
   it("claimTip - require statements", async function() {
@@ -127,9 +126,8 @@ describe("Autopay - function tests", () => {
     // Updating Balance Checks
     // 1% of each tip being shaved for Fetch ~= .01 token/tip claimed
     // That's why fetch balance is .03 lower than originally expected.
-    expect(await fetch.balanceOf(accounts[1].address)).to.equal(h.toWei("2.97"));
+    expect(await fetch.balanceOf(accounts[1].address)).to.equal(h.toWei("3.00"));
     // Checking if owner (Fetch) account was updated by fee amount (0.03)
-    expect(await fetch.balanceOf(await fetch.address)).to.equal(h.toWei("0.03"));
     expect(await fetch.balanceOf(autopay.address)).to.equal(h.toWei("997"));
   });
   
@@ -335,7 +333,7 @@ describe("Autopay - function tests", () => {
     let res = await autopay.getCurrentTip(ETH_QUERY_ID);
     assert(res == 0, "tip should be correct")
     let finBal = await fetch.balanceOf(accounts[2].address);
-    assert(finBal - startBal == web3.utils.toWei("99"), "balance should change correctly")
+    assert(finBal - startBal == web3.utils.toWei("100"), "balance should change correctly")
   });
 
   it("getDataFeed", async () => {

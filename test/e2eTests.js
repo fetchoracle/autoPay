@@ -11,7 +11,6 @@ describe("Autopay - e2e tests", function() {
   let autopay;
   let queryDataStorage;
   let accounts;
-  const FEE = 10
   const abiCoder = new ethers.utils.AbiCoder;
   const FETCH_QUERY_DATA_ARGS = abiCoder.encode(["string", "string"], ["fetch", "usd"])
   const FETCH_QUERY_DATA = abiCoder.encode(["string", "bytes"], ["SpotPrice", FETCH_QUERY_DATA_ARGS])
@@ -39,7 +38,7 @@ describe("Autopay - e2e tests", function() {
     queryDataStorage = await QueryDataStorage.deploy();
     await queryDataStorage.deployed();
     const Autopay = await ethers.getContractFactory("AutopayMock");
-    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address, FEE);
+    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address);
     await autopay.deployed();
   });
 
@@ -85,8 +84,7 @@ describe("Autopay - e2e tests", function() {
   // claim first tip
   await h.advanceTime(3600 * 12)
   await autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID, [blockySubmit1.timestamp])
-  assert(await fetch.balanceOf(accounts[2].address) - web3.utils.toWei("9.9") == 0, "Reporter balance should increase correctly after claiming tip")
-  assert(await fetch.balanceOf(fetch.address) - web3.utils.toWei("0.1") == 0, "Owner balance should increase correctly after claiming tip")
+  assert(await fetch.balanceOf(accounts[2].address) - web3.utils.toWei("10") == 0, "Reporter balance should increase correctly after claiming tip")
   assert(await fetch.balanceOf(autopay.address) - web3.utils.toWei("30") == 0, "Autopay contract balance should decrease correctly after paying tip")
   pastTips = await autopay.getPastTips(ETH_QUERY_ID)
   assert(pastTips.length == 2, "Tips array should be correct length")
@@ -100,8 +98,7 @@ describe("Autopay - e2e tests", function() {
   // claim second tip
   await h.advanceTime(3600 * 12)
   await autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID, [blockySubmit2.timestamp])
-  assert(await fetch.balanceOf(accounts[2].address) - web3.utils.toWei("39.6") == 0, "Reporter balance should increase correctly after claiming tip")
-  assert(await fetch.balanceOf(fetch.address) - web3.utils.toWei("0.4") == 0, "Owner balance should increase correctly after claiming tip")
+  assert(await fetch.balanceOf(accounts[2].address) - web3.utils.toWei("40.0") == 0, "Reporter balance should increase correctly after claiming tip")
   assert(await fetch.balanceOf(autopay.address) == 0, "Autopay contract balance should decrease correctly after paying tip")
   pastTips = await autopay.getPastTips(ETH_QUERY_ID)
   assert(pastTips.length == 2, "Tips array should be correct length")
@@ -115,7 +112,6 @@ describe("Autopay - e2e tests", function() {
     interval1 = 36000
     window1 = 6000
     reward1 = h.toWei("1")
-    reward1MinusFee = reward1 * 0.99
     ownerBalance = await fetch.balanceOf(accounts[0].address)
     reporterBalance = await fetch.balanceOf(accounts[2].address)
     blockyArray1 = new Array()
@@ -151,8 +147,7 @@ describe("Autopay - e2e tests", function() {
     // valid claim tip, interval1
     await autopay.connect(accounts[2]).claimTip(feedId, ETH_QUERY_ID, [blockyArray1[0].timestamp])
     assert(await fetch.balanceOf(autopay.address) - h.toWei("999") == 0, "Autopay contract balance should not change")
-    assert(await fetch.balanceOf(accounts[2].address) - reward1MinusFee == 0, "Reporter balance should update correctly")
-    assert(await fetch.balanceOf(fetch.address) - (reward1 - reward1MinusFee) == 0, "Owner balance should update correctly")
+    assert(await fetch.balanceOf(accounts[2].address) - reward1 == 0, "Reporter balance should update correctly")
     // faucet more tokens, add tip
     await fetch.faucet(accounts[0].address)
     await fetch.approve(autopay.address, h.toWei("10"))
@@ -187,8 +182,7 @@ describe("Autopay - e2e tests", function() {
     await autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID, [blocky.timestamp])
     await h.expectThrow(autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID, [blocky.timestamp])) // Tip already claimed
     assert(await fetch.balanceOf(autopay.address) - h.toWei("1999") == 0, "Autopay contract balance should change correctly")
-    assert(await fetch.balanceOf(accounts[2].address) - reward1MinusFee - h.toWei("9.9") == 0, "Reporter balance should update correctly")
-    assert(await fetch.balanceOf(fetch.address) - ownerBalanceBefore - h.toWei("0.1") == 0, "Owner balance should change correctly")
+    assert(await fetch.balanceOf(accounts[2].address) - h.toWei("11.0") == 0, "Reporter balance should update correctly")
   });
 
   it("multiple queryID's, several disputes and refills", async function() {
@@ -296,9 +290,9 @@ describe("Autopay - e2e tests", function() {
     autopayBalanceBefore = await fetch.balanceOf(autopay.address)
     await autopay.connect(accounts[2]).claimTip(feedId1, ETH_QUERY_ID, [blockyArray1QID1[0].timestamp])
     await h.expectThrow(autopay.connect(accounts[2]).claimTip(feedId1, ETH_QUERY_ID, [blockyArray1QID1[0].timestamp])) // tip already claimed
-    assert(await fetch.balanceOf(accounts[2].address) == h.toWei("0.99"), "Reporter balance should update correctly")
+    assert(await fetch.balanceOf(accounts[2].address) == h.toWei("1.00"), "Reporter balance should update correctly")
     ownerBalanceAfter = await fetch.balanceOf(fetch.address);
-    assert((ownerBalanceAfter.sub(ownerBalanceBefore) - h.toWei("0.01")) == 0, "Owner balance should update correctly")
+    assert((ownerBalanceAfter.sub(ownerBalanceBefore) - h.toWei("0.0")) == 0, "Owner balance should update correctly")
     autopayBalanceAfter = await fetch.balanceOf(autopay.address);
     assert(autopayBalanceBefore.sub(autopayBalanceAfter) - h.toWei("1") == 0, "Autopay contract balance should update correctly")
     // advance time to next interval
@@ -499,8 +493,7 @@ describe("Autopay - e2e tests", function() {
     expect(feedDetails1.balance).to.equal(h.toWei("19"))
     expect(feedDetails2.balance).to.equal(h.toWei("296"))
     expect(feedDetails3.balance).to.equal(h.toWei("297"))
-    expect(await fetch.balanceOf(accounts[2].address)).to.equal(h.toWei("13.86"))
-    expect(await fetch.balanceOf(fetch.address)).to.equal(h.toWei("0.14"))
+    expect(await fetch.balanceOf(accounts[2].address)).to.equal(h.toWei("14.00"))
     expect(pastTips.length).to.equal(2)
     expect(pastTips[0].amount).to.equal(0)
     expect(pastTips[1].amount).to.equal(0)
@@ -649,19 +642,16 @@ describe("Autopay - e2e tests", function() {
     // claim rewards
     await autopay.connect(accounts[1]).claimTip(feedId, ETH_QUERY_ID, [blocky1.timestamp]);
     expectedReward = (BigInt(h.toWei("1")) + BigInt(h.toWei("1")) * (BigInt(blocky1.timestamp) - BigInt(blocky0.timestamp)))
-    expectedReward = expectedReward - (expectedReward * BigInt(FEE) / BigInt(1000)) // fee
     expectedBalance = expectedReward
     expect(await fetch.balanceOf(accounts[1].address)).to.equal(expectedBalance)
 
     await autopay.connect(accounts[1]).claimTip(feedId, ETH_QUERY_ID, [blocky2.timestamp]);
     expectedReward = (BigInt(h.toWei("1")) + BigInt(h.toWei("1")) * (BigInt(blocky2.timestamp) - BigInt(blocky0.timestamp + INTERVAL * 1)))
-    expectedReward = expectedReward - (expectedReward * BigInt(FEE) / BigInt(1000)) // fee
     expectedBalance = expectedBalance + expectedReward
     expect(await fetch.balanceOf(accounts[1].address)).to.equal(expectedBalance)
 
     await autopay.connect(accounts[1]).claimTip(feedId, ETH_QUERY_ID, [blocky3.timestamp]);
     expectedReward = (BigInt(h.toWei("1")) + BigInt(h.toWei("1")) * (BigInt(blocky3.timestamp) - BigInt(blocky0.timestamp + INTERVAL * 2)))
-    expectedReward = expectedReward - (expectedReward * BigInt(FEE) / BigInt(1000)) // fee
     expectedBalance = expectedBalance + expectedReward
     expect(await fetch.balanceOf(accounts[1].address)).to.equal(expectedBalance)
   })
@@ -697,7 +687,7 @@ describe("Autopay - e2e tests", function() {
     let bal1 = await fetch.balanceOf(accounts[3].address)
     await autopay.connect(accounts[3]).claimOneTimeTip(ETH_QUERY_ID, [blocky2.timestamp])
     let bal2 = await fetch.balanceOf(accounts[3].address)
-    expectedReward = h.toWei((75 * (1000 - FEE) / 1000).toString())
+    expectedReward = h.toWei((75 * (1000 - 0) / 1000).toString())
     assert(bal2 - bal1 == expectedReward, "one time tip payout should be correct")
 
     // test autopay tips
@@ -722,7 +712,7 @@ describe("Autopay - e2e tests", function() {
     await h.expectThrow(autopay.connect(accounts[4]).claimTip(feedId1, ETH_QUERY_ID, [blocky4.timestamp]))
     await h.expectThrow(autopay.connect(accounts[5]).claimTip(feedId1, ETH_QUERY_ID, [blocky5.timestamp]))
     await autopay.connect(accounts[6]).claimTip(feedId1, ETH_QUERY_ID, [blocky6.timestamp])
-    expectedReward = h.toWei((1 * (1000 - FEE) / 1000).toString())
+    expectedReward = h.toWei((1 * (1000 - 0) / 1000).toString())
     assert(await fetch.balanceOf(accounts[6].address) == expectedReward, "autopay payout should be correct")
     
   })
@@ -789,7 +779,7 @@ describe("Autopay - e2e tests", function() {
     await h.expectThrow(autopay.connect(accounts[2]).claimOneTimeTip(ETH_QUERY_ID, [blocky2.timestamp]))
     await autopay.connect(accounts[3]).claimOneTimeTip(ETH_QUERY_ID, [blocky3.timestamp])
     reporterBal = await fetch.balanceOf(accounts[3].address)
-    expectedBal = h.toWei((31 * (1000 - FEE) / 1000).toString())
+    expectedBal = h.toWei((31 * (1000 - 0) / 1000).toString())
     expect(reporterBal).to.equal(expectedBal)
   })
 
@@ -848,7 +838,7 @@ describe("Autopay - e2e tests", function() {
     await autopay.connect(accounts[2]).claimTip(feedId1, ETH_QUERY_ID, [blocky2.timestamp]);
     
     expectedReward = await autopay.getRewardAmount(feedId1, ETH_QUERY_ID, [blocky1.timestamp]);
-    assert(expectedReward > h.toWei("0.5"), "reward not correct");
+    assert(expectedReward == h.toWei("1.0"), "reward not correct");
 
     // advance past expiration time
     await h.advanceTime(3600 * 24 * 31)
@@ -870,7 +860,7 @@ describe("Autopay - e2e tests", function() {
     await autopay.connect(accounts[2]).claimTip(feedId1, ETH_QUERY_ID, [blocky1.timestamp]);
     windowStart = blocky0.timestamp + 3600;
     expectedRewardPlusFee = 1 + (blocky1.timestamp - windowStart)
-    expectedBalance = BigInt(h.toWei(expectedRewardPlusFee.toString())) * BigInt(1000 - FEE) / BigInt(1000);
+    expectedBalance = BigInt(h.toWei(expectedRewardPlusFee.toString())) * BigInt(1000 - 0) / BigInt(1000);
     assert(await fetch.balanceOf(accounts[2].address) > h.toWei("1"), "reward not correct");
     assert(await fetch.balanceOf(accounts[2].address) == expectedBalance, "reward not correct");
   })

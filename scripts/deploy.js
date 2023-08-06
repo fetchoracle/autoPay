@@ -13,9 +13,8 @@ require("dotenv").config();
 //npx hardhat run scripts/deploy.js --network harmony_mainnet
 
 var fetchAddress = '0x20763435F23a727CD8748CE5d80a0b9F9c886110'
-var feeAmount = 20
 
-async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
+async function deployAutopay(_network, _pk, _nodeURL, fetchAdd) {
     console.log("deploy autopay")
     await run("compile")
 
@@ -84,7 +83,7 @@ async function deployAutopay(_network, _pk, _nodeURL, fetchAdd, feeAmt) {
     console.log("Starting deployment for Autopay contract...")
     const Autopay = await ethers.getContractFactory("contracts/Autopay.sol:Autopay", wallet)
     const autopaywithsigner = await Autopay.connect(wallet)
-    const autopay = await autopaywithsigner.deploy(fetchAdd, qstorage.address, feeAmt)
+    const autopay = await autopaywithsigner.deploy(fetchAdd, qstorage.address)
     await autopay.deployed();
     console.log("Autopay contract deployed to: ", autopay.address)
 
@@ -157,17 +156,9 @@ if (!node_url_pulsechain) {
     process.exit(1)
 }
 
-deployAutopay(network, process.env.PRIVATE_KEY, node_url_pulsechain, fetchAddress, feeAmount)
+deployAutopay(network, process.env.PRIVATE_KEY, node_url_pulsechain, fetchAddress)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
         process.exit(1);
     });
-
-// deployAutopay("harmony_mainnet", process.env.MAINNET_PK, process.env.NODE_URL_HARMONY_MAINNET, fetchAddress, ownerAddress, feeAmount)
-//     .then(() => process.exit(0))
-//     .catch(error => {
-//         console.error(error);
-//         process.exit(1);
-//     });
-
