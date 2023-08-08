@@ -13,13 +13,27 @@ jobs:
   Tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Run tests
+    - name: Pull dependencies
+      uses: actions/checkout@v3
+      with:
+          repository: fetchoracle/usingFetch
+          ref: dev
+          token: ${{ github.token }}
+          path: usingfetch
+    - name: Pull repo
+      uses: actions/checkout@v3
+      with:
+          path: autoPay
+    - name: Setup Node
       uses: actions/setup-node@v1
       with:
-        node-version: '14.x'
-    - run: npm install
-    - run: npx hardhat test
+        node-version: '16.x'
+    - name: Install Node Dependencies
+      working-directory: ./autoPay
+      run: npm install
+    - name: Run Tests
+      working-directory: ./autoPay
+      run: npx hardhat test
       env:
         CI: true
         # These are not needed for the tests but
