@@ -7,6 +7,9 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 // const web3 = require('web3');
 
+console.warn("Deprecated: Individual deployment scripts are no longer supported");
+console.warn("Please use the script available at https://github.com/fetchoracle/monorepo, in the fetch-contracts folder, to deploy all Fetch Oracle contracts at once");
+/*
 //const dotenv = require('dotenv').config()
 //npx hardhat run scripts/deploy.js --network rinkeby
 //npx hardhat run scripts/deploy.js --network harmony_testnet
@@ -162,3 +165,4 @@ deployAutopay(network, process.env.PRIVATE_KEY, node_url_pulsechain, fetchAddres
         console.error(error);
         process.exit(1);
     });
+*/
