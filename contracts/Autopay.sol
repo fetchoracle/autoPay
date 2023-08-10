@@ -164,7 +164,7 @@ contract Autopay is UsingFetch {
         uint256 _cumulativeReward;
         for (uint256 _i = 0; _i < _timestamps.length; _i++) {
             require(
-                block.timestamp - _timestamps[_i] > 12 hours,
+                block.timestamp - _timestamps[_i] > 30 minutes,
                 "buffer time has not passed"
             );
             require(
@@ -596,7 +596,7 @@ contract Autopay is UsingFetch {
         uint256 _timestamp
     ) internal returns (uint256 _tipAmount) {
         require(
-            block.timestamp - _timestamp > 12 hours,
+            block.timestamp - _timestamp > 30 minutes,
             "buffer time has not passed"
         );
         require(!isInDispute(_queryId, _timestamp), "value disputed");
@@ -701,7 +701,7 @@ contract Autopay is UsingFetch {
         uint256 _timestamp
     ) internal view returns (uint256 _rewardAmount) {
         require(
-            block.timestamp - _timestamp < 4 weeks,
+            block.timestamp - _timestamp < 60 minutes,
             "timestamp too old to claim tip"
         );
         Feed storage _feed = dataFeed[_queryId][_feedId];
