@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.3;
 
-import {UsingFetch} from "usingfetch/contracts/UsingFetch.sol";
+//TODO fix import paths
+import {UsingFetchUpgradeReady} from "usingfetch/contracts/UsingFetchUpgradeReady.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
 import "./interfaces/IQueryDataStorage.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  @author Fetch Inc.
@@ -11,7 +15,7 @@ import "./interfaces/IQueryDataStorage.sol";
  @dev This is a contract for automatically paying for Fetch oracle data at
  * specific time intervals, as well as one time tips.
 */
-contract Autopay is UsingFetch {
+contract Autopay is UsingFetchUpgradeReady, Initializable, OwnableUpgradeable, UUPSUpgradeable {
     // Storage
     IERC20 public token; // FETCH token address
     IQueryDataStorage public queryDataStorage; // Query data storage contract
@@ -91,18 +95,14 @@ contract Autopay is UsingFetch {
         address _reporter
     );
 
-    // Functions
-    /**
-     * @dev Initializes system parameters
-     * @param _fetch address of Fetch contract
-     * @param _queryDataStorage address of query data storage contract
-     */
-    constructor(
-        address payable _fetch,
-        address _queryDataStorage
-    ) UsingFetch(_fetch) {
+    function initialize(address payable _fetch, address _queryDataStorage) public initializer {
+        __Ownable_init();
+        setFetchAddress(_fetch);
         token = IERC20(fetch.token());
         queryDataStorage = IQueryDataStorage(_queryDataStorage);
+    }
+
+    function _authorizeUpgrade(address _newImplementation) internal virtual override onlyOwner {
     }
 
     /**
