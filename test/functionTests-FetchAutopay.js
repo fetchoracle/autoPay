@@ -1,5 +1,5 @@
 const { expect, assert } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const h = require("./helpers/helpers");
 const web3 = require("web3");
 const { keccak256 } = require("@ethersproject/keccak256");
@@ -38,7 +38,7 @@ describe("Autopay - function tests", () => {
     queryDataStorage = await QueryDataStorage.deploy();
     await queryDataStorage.deployed();
     const Autopay = await ethers.getContractFactory("AutopayMock");
-    autopay = await Autopay.deploy(fetch.address, queryDataStorage.address);
+    autopay = await upgrades.deployProxy(Autopay, [fetch.address, queryDataStorage.address]);
     await autopay.deployed();
     firstBlocky = await h.getBlock();
     await autopay.setupDataFeed(ETH_QUERY_ID,h.toWei("1"),firstBlocky.timestamp,3600,600,0,0,ETH_QUERY_DATA,0);
