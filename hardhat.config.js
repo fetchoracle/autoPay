@@ -5,6 +5,7 @@ require("solidity-coverage");
 require('hardhat-contract-sizer');
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
+require('@openzeppelin/hardhat-upgrades');
 require("dotenv").config();
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -84,13 +85,13 @@ require("dotenv").config();
       chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_TESTNET),
       url: `${process.env.NODE_URL_PULSECHAIN_TESTNET}`,
       seeds: [process.env.PRIVATE_KEY],
-      gasPrice: process.env.GAS_PRICE || 5e10
+      gasPrice: parseInt(process.env.GAS_PRICE) || 5e10
     },
     pulse_mainnet: {
       chainId: parseInt(process.env.CHAIN_ID_PULSECHAIN_MAINNET),
       url: `${process.env.NODE_URL_PULSECHAIN_MAINNET}`,
       seeds: [process.env.PRIVATE_KEY],
-      gasPrice: process.env.GAS_PRICE || 5e10
+      gasPrice: parseInt(process.env.GAS_PRICE) || 5e10
     }
   },
   etherscan: {
@@ -109,6 +110,10 @@ require("dotenv").config();
   mocha: {
     grep: "@skip-on-coverage", // Find everything with this tag
     invert: true               // Run the grep's inverse set.
+  },
+
+  gasReporter: {
+    enabled: true
   }
 
 }
