@@ -701,7 +701,7 @@ contract Autopay is UsingFetchUpgradeReady, Initializable, OwnableUpgradeable, U
         uint256 _timestamp
     ) internal view returns (uint256 _rewardAmount) {
         require(
-            block.timestamp - _timestamp < 10 minutes,
+            block.timestamp - _timestamp < 60 minutes,
             "timestamp too old to claim tip"
         );
         Feed storage _feed = dataFeed[_queryId][_feedId];
