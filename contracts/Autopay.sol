@@ -95,6 +95,11 @@ contract Autopay is UsingFetchUpgradeReady, Initializable, OwnableUpgradeable, U
         address _reporter
     );
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address payable _fetch, address _queryDataStorage) public initializer {
         __Ownable_init();
         setFetchAddress(_fetch);
