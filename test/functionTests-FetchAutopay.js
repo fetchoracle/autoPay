@@ -162,7 +162,7 @@ describe("Autopay - function tests", () => {
     assert.include(result.message, "must be sending an amount");
     // require(IERC20(_feed.fetch).transferFrom(msg.sender,address(this),_amount),"ERC20: transfer amount exceeds balance");
     result = await h.expectThrowMessage(autopay.fundFeed(bytesId, ETH_QUERY_ID, h.toWei("1000300")));
-    assert.include(result.message, "Arithmetic operation underflowed or overflowed outside of an unchecked block") // real message returned
+    assert.include(result.message, "Arithmetic operation overflowed outside of an unchecked block") // real message returned
     //VARIABLE UPDATES
     // _feed.balance += _amount;
     dataFeedDetails = await autopay.getDataFeed(bytesId);
