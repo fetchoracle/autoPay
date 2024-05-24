@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity 0.8.20;
 
 //TODO fix import paths
 import {UsingFetchUpgradeReady} from "usingfetch/contracts/UsingFetchUpgradeReady.sol";
@@ -94,6 +94,11 @@ contract Autopay is UsingFetchUpgradeReady, Initializable, OwnableUpgradeable, U
         uint256 indexed _amount,
         address _reporter
     );
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(address payable _fetch, address _queryDataStorage) public initializer {
         __Ownable_init();
