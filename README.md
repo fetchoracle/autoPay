@@ -158,7 +158,7 @@ npx hardhat run scripts/deploy.js
 
 The current version of the autopay contract is deployed in PulseChain testnet in this address:
 
-[0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432](https://scan.v4.testnet.pulsechain.com/address/0x3bb78c986c0Ad35f4BEC284e7c2C3d2808C05432)
+[0xa2B568c4C101522DB20C4B2BAa2E6eD55b9Df6DF](https://scan.v4.testnet.pulsechain.com/address/0xa2B568c4C101522DB20C4B2BAa2E6eD55b9Df6DF)
 ## Copyright
 
-Fetch Inc. 2023
+Fetch Inc. 2024
